@@ -164,6 +164,7 @@ class CognitoTokenGuard extends TokenGuard
             //Check if the user exists in local data store
             if (!($user instanceof Authenticatable) && config('cognito.add_missing_local_user_sso')) {
                 $this->createLocalUser($credentials);
+                $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
             } elseif (!($user instanceof Authenticatable)) {
                 throw new NoLocalUserException();
             } //End if
