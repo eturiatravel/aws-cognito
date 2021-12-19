@@ -104,7 +104,6 @@ class CognitoTokenGuard extends TokenGuard
     {
         /** @var Result $response */
         $result = $this->client->authenticate($credentials[$this->keyUsername], $credentials['password']);
-        $test = $this->client->getUserByAccessToken($credentials[$this->keyCode]);
        
         if (!empty($result) && $result instanceof AwsResult) {
 
