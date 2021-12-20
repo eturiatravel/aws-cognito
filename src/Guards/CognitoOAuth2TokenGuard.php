@@ -12,6 +12,7 @@
 namespace Ellaisys\Cognito\Guards;
 
 use Aws\Result as AwsResult;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Auth\TokenGuard;
 use Illuminate\Support\Facades\Log;
@@ -102,11 +103,14 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
         } catch (AwsCognitoException $e) {
             Log::error('CognitoTokenGuard:attempt:AwsCognitoException:'. $e->getMessage());
             throw $e;
+        } catch (ClientException $e) {
+            Log::error($e->getResponse()->getBody()->getContents());
+            throw $e;
         } catch (Exception $e) {
             Log::error('CognitoTokenGuard:attempt:Exception:'.$e->getMessage());
             throw $e;
-        } //Try-catch ends
-    } //Function ends
+        }
+    }
 
     private function getUserFromToken($token)
     {

@@ -12,6 +12,7 @@
 namespace Ellaisys\Cognito\Auth;
 
 use Auth;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -70,6 +71,9 @@ trait AuthenticatesUsers
         } catch (CognitoIdentityProviderException $e) {
             Log::error('AuthenticatesUsers:attemptLogin:CognitoIdentityProviderException');
             return $this->sendFailedCognitoResponse($e);
+        } catch (ClientException $e) {
+            Log::error('AuthenticatesUsers:attemptLogin:Exception');
+            return $this->sendFailedCodeAuth($request, $e, $isJsonResponse);
         } catch (Exception $e) {
             Log::error('AuthenticatesUsers:attemptLogin:Exception');
             return $this->sendFailedLoginResponse($request, $e, $isJsonResponse);
@@ -122,5 +126,27 @@ trait AuthenticatesUsers
 
         throw new HttpException(400, $message);
     } //Function ends
+
+    private function sendFailedCodeAuth(Collection $request, Exception $exception = null, bool $isJsonResponse = false)
+    {
+        $message = 'FailedAuth';
+        if (!empty($exception)) {
+            $message = $exception->getResponse()->getBody()->getContents();
+        } //End if
+
+        if ($isJsonResponse) {
+            return response()->json([
+                'error' => 'cognito.validation.auth.failed',
+                'message' => $message
+            ], 401);
+        } else {
+            return redirect()
+                ->withErrors([
+                    'username' => $message,
+                ]);
+        } //End if
+
+        throw new HttpException(401, $message);
+    }
 
 } //Trait ends
