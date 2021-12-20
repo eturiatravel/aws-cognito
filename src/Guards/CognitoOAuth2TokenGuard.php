@@ -57,7 +57,8 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
         try {
             $result = $this->client->authenticateWithCode($credentials[$this->keyCode]);
             $cognitoUser = $this->getUserFromToken($result);
-            $this->claim = new AwsCognitoClaim($result, $cognitoUser, $cognitoUser['name']);
+            $AWSResult = $this->guzzleToAwsResult($result);
+            $this->claim = new AwsCognitoClaim($result, $AWSResult, $cognitoUser['name']);
 
             $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser);
 
@@ -123,5 +124,15 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
             "email" => $jwtPayload['email'],
             "id" => $jwtPayload['cognito:username']
         ];
+    }
+
+    private function guzzleToAwsResult($result): AwsResult
+    {
+        $body = json_decode((string) $result->getBody());
+        return new AwsResult ([
+            'AuthenticationResult' => [
+                'AccessToken' => $body->access_token
+            ]
+        ]);
     }
 }
