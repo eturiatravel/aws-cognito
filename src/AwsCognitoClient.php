@@ -196,7 +196,8 @@ class AwsCognitoClient
     } //Function ends
 
 
-    public function authenticateWithCode($code) {
+    public function authenticateWithCode($code)
+    {
         try {
             $authHeader = $this->cognitoAuthHeader();
             $response = $this->httpClient->request('POST', $this->cognitoCodeUri, [
@@ -213,7 +214,9 @@ class AwsCognitoClient
             ]);
         } catch (ClientException $e) {
             Log::error("Error returning token from Cognito");
+            throw $e;
         }
+        return $response;
     }
 
     /**
