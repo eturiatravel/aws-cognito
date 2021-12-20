@@ -58,17 +58,18 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
             $result = $this->client->authenticateWithCode($credentials[$this->keyCode]);
             $cognitoUser = $this->getUserFromToken($result);
             $AWSResult = $this->guzzleToAwsResult($result);
-            $this->claim = new AwsCognitoClaim($result, $AWSResult, $cognitoUser['name']);
 
             $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser);
 
-            //Check if the user exists in local data store
+
             if (!($user instanceof Authenticatable) && config('cognito.add_missing_local_user_sso')) {
                 $this->createLocalUser($credentials);
                 $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
             } elseif (!($user instanceof Authenticatable)) {
                 throw new NoLocalUserException();
-            } //End if
+            }
+
+            $this->claim = new AwsCognitoClaim($AWSResult, $user , $cognitoUser['name']);
 
             return $this->login($user);
 
