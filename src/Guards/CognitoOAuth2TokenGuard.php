@@ -114,7 +114,8 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
 
     private function getUserFromToken($token)
     {
-        $tokenParts = explode(".", $token);
+        $idToken = json_decode((string) $token->getBody())->id_token;
+        $tokenParts = explode(".", $idToken);
         $tokenPayload = base64_decode($tokenParts[1]);
         $jwtPayload = json_decode($tokenPayload);
         return [
