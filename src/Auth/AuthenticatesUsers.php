@@ -43,8 +43,9 @@ trait AuthenticatesUsers
      */
     protected function attemptLogin(Collection $request,bool $isJsonResponse = false, string $guard = 'web', string $paramUsername = 'email', string $paramPassword = 'password', string $paramCode = 'code')
     {
+        Log::info('Start login attempt');
         try {
-            //Get key fields
+
             $keyUsername = 'email';
             $keyPassword = 'password';
             $keyCode = 'code';
@@ -62,9 +63,9 @@ trait AuthenticatesUsers
                 ];
             }
 
-            //Authenticate User
+            Log::info('Start authenticating user via set Guards. Try to get AWS Claim');
             $claim = Auth::guard($guard)->attempt($credentials, $rememberMe);
-
+            Log::info('End authenticating user. Resulted AWS Claim => ' . $claim );
         } catch (NoLocalUserException $e) {
             Log::error('AuthenticatesUsers:attemptLogin:NoLocalUserException');
             return $this->sendFailedLoginResponse($request, $e, $isJsonResponse);
@@ -78,7 +79,7 @@ trait AuthenticatesUsers
             Log::error('AuthenticatesUsers:attemptLogin:Exception');
             return $this->sendFailedLoginResponse($request, $e, $isJsonResponse);
         } //Try-catch ends
-
+        Log::info('End login attempt');
         return $claim;
     } //Function ends
 

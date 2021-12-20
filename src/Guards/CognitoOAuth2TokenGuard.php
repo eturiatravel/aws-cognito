@@ -11,6 +11,7 @@
 
 namespace Ellaisys\Cognito\Guards;
 
+use Aws\CognitoIdentityProvider\Exception\CognitoIdentityProviderException;
 use Aws\Result as AwsResult;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
@@ -27,7 +28,6 @@ use Exception;
 use Ellaisys\Cognito\Exceptions\NoLocalUserException;
 use Ellaisys\Cognito\Exceptions\InvalidUserModelException;
 use Ellaisys\Cognito\Exceptions\AwsCognitoException;
-use Aws\CognitoIdentityProvider\Exception\CognitoIdentityProviderException;
 
 class CognitoOAuth2TokenGuard extends CognitoTokenGuard
 {
@@ -55,21 +55,27 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
     public function attempt(array $credentials = [], $remember = false)
     {
         try {
+            Log::info('Attempt login with' . get_class($this));
             $result = $this->client->authenticateWithCode($credentials[$this->keyCode]);
             $cognitoUser = $this->getUserFromToken($result);
             $AWSResult = $this->guzzleToAwsResult($result);
 
+            Log::info('Start looking for the local user.');
             $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser);
 
 
             if (!($user instanceof Authenticatable) && config('cognito.add_missing_local_user_sso')) {
+                Log::info('No local user found.');
                 $this->createLocalUser($cognitoUser);
                 $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser);
             } elseif (!($user instanceof Authenticatable)) {
                 throw new NoLocalUserException();
             }
+            Log::info('Local user set.');
 
+            Log::info('Start creating new Aws Claim.');
             $this->claim = new AwsCognitoClaim($AWSResult, $user , $cognitoUser['name']);
+            Log::info('End creating new Aws Claim.');
 
             return $this->login($user);
 
@@ -116,21 +122,25 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
 
     private function getUserFromToken($token)
     {
+        Log::info('Start retrieving user data from the token_id.');
         $idToken = json_decode((string) $token->getBody())->id_token;
         $tokenParts = explode(".", $idToken);
         $tokenPayload = base64_decode($tokenParts[1]);
         $jwtPayload = json_decode($tokenPayload, true);
-        return [
+        $user = [
             "name" => $jwtPayload['name'],
             "email" => $jwtPayload['email'],
             "id" => $jwtPayload['cognito:username']
         ];
+        Log::info('End retrieving user data from the token_id.');
+        return $user;
     }
 
     private function guzzleToAwsResult($result): AwsResult
     {
+        Log::info('Start converting Guzzle Http response to AWS Claim.');
         $body = json_decode((string) $result->getBody());
-        return new AwsResult ([
+        $claim = new AwsResult ([
             'AuthenticationResult' => [
                 'AccessToken' => $body->access_token,
                 'ExpiresIn' => $body->expires_in,
@@ -139,5 +149,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
                 'IdToken' => $body->id_token,
             ]
         ]);
+        Log::info('Start converting Guzzle Http response to AWS Claim.');
+        return $claim;
     }
 }

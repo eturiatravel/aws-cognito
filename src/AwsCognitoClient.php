@@ -198,6 +198,7 @@ class AwsCognitoClient
 
     public function authenticateWithCode($code)
     {
+        Log::info('Start requesting token from AWS inside ' . get_class($this));
         try {
             $authHeader = $this->cognitoAuthHeader();
             $response = $this->httpClient->request('POST', $this->cognitoCodeUri, [
@@ -216,6 +217,7 @@ class AwsCognitoClient
             Log::error("Error returning token from Cognito");
             throw $e;
         }
+        Log::info('End requesting token from AWS.');
         return $response;
     }
 

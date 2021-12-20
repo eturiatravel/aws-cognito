@@ -14,6 +14,7 @@ namespace Ellaisys\Cognito;
 use Ellaisys\Cognito\AwsCognitoToken;
 use Ellaisys\Cognito\AwsCognitoClaim;
 use Ellaisys\Cognito\Providers\StorageProvider;
+use Illuminate\Support\Facades\Log;
 
 use Exception;
 use Ellaisys\Cognito\Exceptions\AwsCognitoException;
@@ -101,10 +102,12 @@ class AwsCognitoManager
      */
     public function store()
     {
+        Log::info('Start storing token.');
         $data = $this->claim->getData();
         $durationInSecs = ($data)?(int) $data['ExpiresIn']:3600;
         $this->provider->add($this->token, json_encode($this->claim), $durationInSecs);
-
+        Log::info('Store provider => ' . get_class($this->provider));
+        Log::info('End storing token.');
         return true;
     } //Function ends
 
@@ -116,10 +119,12 @@ class AwsCognitoManager
      */
     public function fetch(string $token)
     {
+        Log::info('Start fetching token.');
         $this->token = $token;
         $claim = $this->provider->get($token);
         $this->claim = $claim?json_decode($claim, true):null;
-
+        Log::info('Store provider => ' . get_class($this->provider));
+        Log::info('End fetching token.');
         return $this;
     } //Function ends
 

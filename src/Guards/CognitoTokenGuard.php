@@ -220,6 +220,7 @@ class CognitoTokenGuard extends TokenGuard
      */
     protected function login($user)
     {
+        Log::info('Start logging user.');
         if (!empty($this->claim)) {
 
             //Save the claim if it matches the Cognito Claim
@@ -232,7 +233,7 @@ class CognitoTokenGuard extends TokenGuard
             //Set user
             $this->setUser($user);
         } //End if
-
+        Log::info('End logging user.');
         return $this->claim;
     } //Fucntion ends
 
@@ -244,8 +245,9 @@ class CognitoTokenGuard extends TokenGuard
      */
     public function setToken()
     {
+        Log::info('Start setting token.');
         $this->cognito->setClaim($this->claim)->storeToken();
-
+        Log::info('End setting token.');
         return $this;
     } //Function ends
 
