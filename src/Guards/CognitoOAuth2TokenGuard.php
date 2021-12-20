@@ -57,7 +57,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
         try {
             $result = $this->client->authenticateWithCode($credentials[$this->keyCode]);
             $cognitoUser = $this->getUserFromToken($result);
-            $this->claim = new AwsCognitoClaim($result, $cognitoUser, $credentials[$this->keyUsername]);
+            $this->claim = new AwsCognitoClaim($result, $cognitoUser, $cognitoUser['name']);
 
             $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser);
 
