@@ -63,8 +63,8 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
 
 
             if (!($user instanceof Authenticatable) && config('cognito.add_missing_local_user_sso')) {
-                $this->createLocalUser($credentials);
-                $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
+                $this->createLocalUser($cognitoUser);
+                $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser);
             } elseif (!($user instanceof Authenticatable)) {
                 throw new NoLocalUserException();
             }
