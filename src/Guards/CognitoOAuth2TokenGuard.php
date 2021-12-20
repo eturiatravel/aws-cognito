@@ -117,7 +117,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
         $idToken = json_decode((string) $token->getBody())->id_token;
         $tokenParts = explode(".", $idToken);
         $tokenPayload = base64_decode($tokenParts[1]);
-        $jwtPayload = json_decode($tokenPayload);
+        $jwtPayload = json_decode($tokenPayload, true);
         return [
             "name" => $jwtPayload->name,
             "email" => $jwtPayload->email,
