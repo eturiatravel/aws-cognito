@@ -40,7 +40,7 @@ trait AuthenticatesUsers
      *
      * @return mixed
      */
-    protected function attemptLogin(Collection $request, string $guard = 'web', string $paramUsername = 'email', string $paramPassword = 'password', string $paramCode = 'code', bool $isJsonResponse = false)
+    protected function attemptLogin(Collection $request,bool $isJsonResponse = false, string $guard = 'web', string $paramUsername = 'email', string $paramPassword = 'password', string $paramCode = 'code')
     {
         try {
             //Get key fields

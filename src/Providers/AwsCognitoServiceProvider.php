@@ -74,6 +74,7 @@ class AwsCognitoServiceProvider extends ServiceProvider
         //Set Guards
         $this->extendWebAuthGuard();
         $this->extendApiAuthGuard();
+        $this->extendApiOAuth2Guard();
     } //Function ends
 
 
