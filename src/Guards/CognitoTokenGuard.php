@@ -218,7 +218,7 @@ class CognitoTokenGuard extends TokenGuard
      *
      * @return claim
      */
-    private function login($user)
+    protected function login($user)
     {
         if (!empty($this->claim)) {
 

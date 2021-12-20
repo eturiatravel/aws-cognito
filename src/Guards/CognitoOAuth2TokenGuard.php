@@ -51,17 +51,72 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
     }
 
 
-    protected function hasValidCredentials($user, $credentials): bool
+    public function attempt(array $credentials = [], $remember = false)
     {
-        $result = $this->client->authenticateWithCode($credentials[$this->keyCode]);
+        try {
+            $result = $this->client->authenticateWithCode($credentials[$this->keyCode]);
+            $cognitoUser = $this->getUserFromToken($result);
+            $this->claim = new AwsCognitoClaim($result, $cognitoUser, $credentials[$this->keyUsername]);
 
-        if (!empty($result) && $result instanceof AwsResult) {
-            $this->claim = new AwsCognitoClaim($result, $user, $credentials[$this->keyUsername]);
-            return ($this->claim) ? true : false;
-        } else {
+            $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser);
+
+            //Check if the user exists in local data store
+            if (!($user instanceof Authenticatable) && config('cognito.add_missing_local_user_sso')) {
+                $this->createLocalUser($credentials);
+                $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
+            } elseif (!($user instanceof Authenticatable)) {
+                throw new NoLocalUserException();
+            } //End if
+
+            return $this->login($user);
+
+
             return false;
-        }
+        } catch (NoLocalUserException $e) {
+            Log::error('CognitoTokenGuard:attempt:NoLocalUserException:');
+            throw $e;
+        } catch (CognitoIdentityProviderException $e) {
+            Log::error('CognitoTokenGuard:attempt:CognitoIdentityProviderException:'.$e->getAwsErrorCode());
 
-        return false;
+            //Set proper route
+            if (!empty($e->getAwsErrorCode())) {
+                $errorCode = 'CognitoIdentityProviderException';
+                switch ($e->getAwsErrorCode()) {
+                    case 'PasswordResetRequiredException':
+                        $errorCode = 'cognito.validation.auth.reset_password';
+                        break;
+
+                    case 'NotAuthorizedException':
+                        $errorCode = 'cognito.validation.auth.user_unauthorized';
+                        break;
+
+                    default:
+                        $errorCode = $e->getAwsErrorCode();
+                        break;
+                } //End switch
+
+                return response()->json(['error' => $errorCode, 'message' => $e->getAwsErrorCode() ], 400);
+            } //End if
+
+            return $e->getAwsErrorCode();
+        } catch (AwsCognitoException $e) {
+            Log::error('CognitoTokenGuard:attempt:AwsCognitoException:'. $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            Log::error('CognitoTokenGuard:attempt:Exception:'.$e->getMessage());
+            throw $e;
+        } //Try-catch ends
+    } //Function ends
+
+    private function getUserFromToken($token)
+    {
+        $tokenParts = explode(".", $token);
+        $tokenPayload = base64_decode($tokenParts[1]);
+        $jwtPayload = json_decode($tokenPayload);
+        return [
+            "name" => $jwtPayload->name,
+            "email" => $jwtPayload->email,
+            "id" => $jwtPayload['cognito:username']
+        ];
     }
 }
