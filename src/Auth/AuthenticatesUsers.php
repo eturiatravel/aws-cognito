@@ -131,7 +131,7 @@ trait AuthenticatesUsers
     {
         $message = 'FailedAuth';
         if (!empty($exception)) {
-            $message = $exception->getResponse()->getBody()->getContents();
+            $message = (string) $exception->getResponse()->getBody();
         } //End if
 
         if ($isJsonResponse) {
