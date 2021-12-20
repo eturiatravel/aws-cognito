@@ -132,7 +132,11 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
         $body = json_decode((string) $result->getBody());
         return new AwsResult ([
             'AuthenticationResult' => [
-                'AccessToken' => $body->access_token
+                'AccessToken' => $body->access_token,
+                'ExpiresIn' => $body->expires_in,
+                'TokenType' => $body->token_type,
+                'RefreshToken' => $body->refresh_token,
+                'IdToken' => $body->id_token,
             ]
         ]);
     }
