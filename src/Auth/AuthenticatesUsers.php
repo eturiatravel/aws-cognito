@@ -136,8 +136,7 @@ trait AuthenticatesUsers
 
         if ($isJsonResponse) {
             return response()->json([
-                'error' => 'cognito.validation.auth.failed',
-                'message' => $message
+                json_decode($message),
             ], 401);
         } else {
             return redirect()
