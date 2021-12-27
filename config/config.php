@@ -36,6 +36,7 @@ return [
     'version'           => env('AWS_COGNITO_VERSION', 'latest'),
     'auth_redirect_uri' => env('AWS_COGNITO_REDIRECT_URI'),
     'auth_uri'          => env('AWS_COGNITO_URI'),
+    'token_tll'         => env('TOKEN_TLL', 31556952),
     /*
     |--------------------------------------------------------------------------
     | Cognito Fields & DB Mapping
@@ -100,7 +101,7 @@ return [
     |
     */
     'forced_challenge_names' => [
-        AwsCognitoClient::NEW_PASSWORD_CHALLENGE, 
+        AwsCognitoClient::NEW_PASSWORD_CHALLENGE,
         AwsCognitoClient::RESET_REQUIRED_PASSWORD
     ],
 
