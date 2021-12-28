@@ -74,7 +74,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
             Log::info('Local user set.');
 
             Log::info('Start creating new Aws Claim.');
-            $this->claim = new AwsCognitoClaim($AWSResult, $user , $cognitoUser['name']);
+            $this->claim = new AwsCognitoClaim($AWSResult, $user, $cognitoUser['name']);
             Log::info('End creating new Aws Claim.');
 
             return $this->login($user);
@@ -85,7 +85,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
             Log::error('CognitoTokenGuard:attempt:NoLocalUserException:');
             throw $e;
         } catch (CognitoIdentityProviderException $e) {
-            Log::error('CognitoTokenGuard:attempt:CognitoIdentityProviderException:'.$e->getAwsErrorCode());
+            Log::error('CognitoTokenGuard:attempt:CognitoIdentityProviderException:' . $e->getAwsErrorCode());
 
             //Set proper route
             if (!empty($e->getAwsErrorCode())) {
@@ -104,18 +104,18 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
                         break;
                 } //End switch
 
-                return response()->json(['error' => $errorCode, 'message' => $e->getAwsErrorCode() ], 400);
+                return response()->json(['error' => $errorCode, 'message' => $e->getAwsErrorCode()], 400);
             } //End if
 
             return $e->getAwsErrorCode();
         } catch (AwsCognitoException $e) {
-            Log::error('CognitoTokenGuard:attempt:AwsCognitoException:'. $e->getMessage());
+            Log::error('CognitoTokenGuard:attempt:AwsCognitoException:' . $e->getMessage());
             throw $e;
         } catch (ClientException $e) {
             Log::error($e->getResponse()->getBody()->getContents());
             throw $e;
         } catch (Exception $e) {
-            Log::error('CognitoTokenGuard:attempt:Exception:'.$e->getMessage());
+            Log::error('CognitoTokenGuard:attempt:Exception:' . $e->getMessage());
             throw $e;
         }
     }
@@ -123,14 +123,12 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
     private function getUserFromToken($token)
     {
         Log::info('Start retrieving user data from the token_id.');
-        $idToken = json_decode((string) $token->getBody())->id_token;
+        $idToken = json_decode((string)$token->getBody())->id_token;
         $tokenParts = explode(".", $idToken);
         $tokenPayload = base64_decode($tokenParts[1]);
         $jwtPayload = json_decode($tokenPayload, true);
         $user = [
-            "name" => $jwtPayload['name'],
             "email" => $jwtPayload['email'],
-            "id" => $jwtPayload['cognito:username']
         ];
         Log::info('End retrieving user data from the token_id.');
         return $user;
@@ -139,7 +137,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
     private function guzzleToAwsResult($result): AwsResult
     {
         Log::info('Start converting Guzzle Http response to AWS Claim.');
-        $body = json_decode((string) $result->getBody());
+        $body = json_decode((string)$result->getBody());
         $claim = new AwsResult ([
             'AuthenticationResult' => [
                 'AccessToken' => $body->access_token,
