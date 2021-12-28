@@ -61,7 +61,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
             $AWSResult = $this->guzzleToAwsResult($result);
 
             Log::info('Start looking for the local user.');
-            $this->lastAttempted = $user = $this->provider->retrieveByCredentials($cognitoUser['email']);
+            $this->lastAttempted = $user = $this->provider->retrieveByCredentials([$cognitoUser['email']]);
 
 
             if (!($user instanceof Authenticatable) && config('cognito.add_missing_local_user_sso')) {
