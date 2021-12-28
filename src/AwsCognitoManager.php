@@ -105,7 +105,7 @@ class AwsCognitoManager
     {
         Log::info('Start storing token.');
         $data = $this->claim->getData();
-        $durationInSecs = ($data)?(int) $data['ExpiresIn']: config('cognito.token_tll');
+        $durationInSecs = ($data)?(int) $data['ExpiresIn']: 3600;
         $this->provider->add($this->token, json_encode($this->claim), $durationInSecs);
         Log::info('Store provider => ' . get_class($this->provider));
         Log::info('End storing token.');

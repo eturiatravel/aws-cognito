@@ -143,6 +143,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
         $claim = new AwsResult ([
             'AuthenticationResult' => [
                 'AccessToken' => $body->access_token,
+                'ExpiresIn' => config('cognito.token_tll'),
                 'TokenType' => $body->token_type,
                 'RefreshToken' => $body->refresh_token,
                 'IdToken' => $body->id_token,
