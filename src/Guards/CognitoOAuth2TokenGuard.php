@@ -75,7 +75,8 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
             Log::info('Local user set.');
 
             Log::info('Start creating new Aws Claim.');
-            $this->claim = new AwsCognitoClaim($AWSResult, $user , $cognitoUser['name']);
+            $userName = $cognitoUser['name'] ?: $cognitoUser['email'];
+            $this->claim = new AwsCognitoClaim($AWSResult, $user , $userName);
             Log::info('End creating new Aws Claim.');
 
             return $this->login($user);
