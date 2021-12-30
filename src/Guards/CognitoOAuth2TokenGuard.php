@@ -75,7 +75,7 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
             Log::info('Local user set.');
 
             Log::info('Start creating new Aws Claim.');
-            $userName = $cognitoUser['name'] ?: $cognitoUser['email'];
+            $userName = empty($cognitoUser['name']) ? $cognitoUser['name'] : $cognitoUser['email'];
             $this->claim = new AwsCognitoClaim($AWSResult, $user , $userName);
             Log::info('End creating new Aws Claim.');
 
@@ -129,8 +129,9 @@ class CognitoOAuth2TokenGuard extends CognitoTokenGuard
         $tokenParts = explode(".", $idToken);
         $tokenPayload = base64_decode($tokenParts[1]);
         $jwtPayload = json_decode($tokenPayload, true);
+        $userName = $jwtPayload['name'] ?? '';
         $user = [
-            "name" => $jwtPayload['name'],
+            "name" => $userName,
             "email" => $jwtPayload['email'],
         ];
         Log::info('End retrieving user data from the token_id.');
